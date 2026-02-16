@@ -5,7 +5,7 @@ from Chess import ChessEngine
 import pygame as p
 
 
-BOARD_WIDTH = BOARD_WIDTH = 512
+BOARD_WIDTH = BOARD_WIDTH = 600
 DIMENSION = 8
 SQUIRE_SIZE = BOARD_WIDTH // DIMENSION
 MAX_FSB = 15 # FOR ANIMATION
@@ -31,13 +31,42 @@ def main():
     game_stat = ChessEngine.GameState()
 
     load_images()
+
+    # events loop
     running =True
-
-
+    sq_selected = () #track the last click of hte user
+    player_clickes = [] #keeps track of the use clicks for moving the pieces
     while running:
+
+
         for e in p.event.get():
+            # to close the app
             if e.type == p.QUIT:
                 running = False
+
+            # moving the pieces
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos()
+                col = location[0]//SQUIRE_SIZE
+                row = location[1]//SQUIRE_SIZE
+                # if the user double click the same sq
+                if sq_selected == (row, col):
+                    sq_selected = ()
+                    player_clickes = []
+                # if the user try to move an empty sq
+                elif len(player_clickes) == 1 and (game_stat.board[player_clickes[0][0]][player_clickes[0][1]] == "--") :
+                    sq_selected = () #rest user clicks
+                    player_clickes = []
+                else:
+                    sq_selected = (row, col)
+                    player_clickes.append(sq_selected) #append user clickes
+                if len(player_clickes) == 2:
+                    move = ChessEngine.Move(player_clickes[0], player_clickes[1], game_stat.board)
+                    print(move.get_chess_notation())
+                    game_stat.make_move(move)
+                    sq_selected = () #rest user clicks
+                    player_clickes = []
+        # drow the gs
         drawGameState(screen, game_stat)
         clock.tick(MAX_FSB)
         p.display.flip()
@@ -66,19 +95,3 @@ def drow_pieces(screen, board):
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
